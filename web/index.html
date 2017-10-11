@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src='jquery.min.js'></script>
+    <script src='socket.io.min.js'></script>
+    <title>코스콤 주문서버</title>
+
+</head>
+
+<body>
+    코스콤 주문서버
+
+    <p>
+        <a href="#" class="normal-button" data-query="accountlist_search">계좌리스트조회</a>
+    </p>
+    <p>
+        <a href="#" class="normal-button" data-query="balance_search">계좌잔고조회</a>
+    </p>
+    <p>
+        <a href="#" id="order">주문테스트</a>
+    </p>
+    <div id="viz" style="background: #eeeeee;padding: 20px;margin: 20px;">
+
+    </div>
+
+    <div id="socviz" style="background: yellow;padding: 20px;margin: 20px;">
+
+    </div>
+
+    <script>
+        $(function() {
+            var qrAccNo = '707506110001';
+            var $viz = $('#viz');
+            $('#order').click(function(e) {
+                e.preventDefault();
+                $.post('/order', {
+                    account: qrAccNo,
+                    symbol: '240810',
+                    side: '1',
+                    orderQty: 1,
+                    ordType: 2,
+                    price: 37000,
+                    securitycode: 'KRSSAMSUNG2'
+                }, function(res) {
+                    var resStr = JSON.stringify(res, null, 4);
+                    $viz.html(resStr);
+                });
+            });
+
+            $('.normal-button').click(function(e) {
+                e.preventDefault();
+                var data = $(this).data('query');
+                //계좌리스트조회
+                var temp = {
+                    comId: '*****', // 고정
+                    srvId: '100', // 고정
+                    reqIdConsumer: 'Fintech-2016062200001' // 구분스트링 (중복되지 않게 형식없음)
+                };
+
+                if (data.indexOf('balance') !== -1) {
+                    temp.qrAccNo = qrAccNo;
+                }
+
+                $.post('/' + data, temp, function(res) {
+                    var resStr = JSON.stringify(res, null, 4);
+                    $viz.html(resStr);
+                });
+            });
+
+            var $socviz = $('#socviz');
+            var ioClient = io('http://localhost:3333/');
+            ioClient.on('CONCLUSION', function(dd) {
+                console.log(dd);
+                $socviz.html(JSON.stringify(dd, null, 4));
+            });
+        });
+    </script>
+</body>
+
+</html>

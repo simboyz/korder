@@ -1,0 +1,4 @@
+node_modules/
+logs/*.*
+log.txt
+prefix_test.json
